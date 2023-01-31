@@ -11,6 +11,8 @@ public class Player {
     //Position of player inside the maze
     private int posX;
     private int posZ;
+
+
     // Camera Position
     private Vector3f camera;
     // LookAt Position
@@ -64,5 +66,12 @@ public class Player {
         return (float) (direction*180/Math.PI);
     }
 
+    public Vector3f getCamera() {
+        return camera;
+    }
+
+    public Vector3f getEye() {
+        return eye;
+    }
 }
 

@@ -4,6 +4,7 @@ import android.util.Log;
 
 import com.example.mazepovgame.maze.generation.Cell;
 import com.example.mazepovgame.maze.generation.Maze;
+import com.example.mazepovgame.utils.Vector3f;
 
 public class MazeMap {
 
@@ -72,7 +73,6 @@ public class MazeMap {
 
     public void movePlayer(float velocity){
         int pos[] = this.player.tryToMove(velocity);
-
         if (pos[0] < 0 || pos[1] < 0 || pos[0] >= (width*3) || pos[1] >= (length*3) || this.mazeCells[pos[1]][pos[0]].isWall()){
             Log.e("PLAYER", "Cannot to move to ("+pos[0]+","+pos[1]+")");
             return;
@@ -83,5 +83,18 @@ public class MazeMap {
 
     public void rotateEye(float rotation_angle, float rotation_velocity) {
         this.player.rotateEye(rotation_angle, rotation_velocity);
+    }
+
+    public Vector3f getFinishCellPosition(){
+        //Finish cell is always in bottom right corner
+        int lastI = (width * 3) - 2;
+        int lastJ = (length * 3) - 1;
+        return mazeCells[lastI][lastJ].getPosition();
+    }
+
+    public Vector3f getMazeMapSize(){
+        float sizeX = CELL_SIZE * (width) / 2;
+        float sizeZ = CELL_SIZE * (length) / 2;
+        return new Vector3f(sizeX, 1f, sizeZ);
     }
 }
