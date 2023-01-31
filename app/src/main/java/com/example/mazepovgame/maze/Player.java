@@ -41,6 +41,14 @@ public class Player {
         updateEye();
     }
 
+    public void movePlayer(float velocity){
+        Log.d("PLAYER", "POS"+this.camera);
+        this.camera.x +=  Math.cos(direction)*velocity;
+        this.camera.z -=  Math.sin(direction)*velocity;
+        updatePos();
+        updateEye();
+    }
+
     private float getDirection() {
         // in degrees
         return (float) (direction*180/Math.PI);
