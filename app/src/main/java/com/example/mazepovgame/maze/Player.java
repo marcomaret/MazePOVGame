@@ -7,6 +7,7 @@ import android.util.Log;
 import com.example.mazepovgame.utils.Vector3f;
 
 public class Player {
+    public static final float PLAYER_SIZE = WALL_SIZE;
     //Position of player inside the maze
     private int posX;
     private int posZ;
@@ -36,7 +37,7 @@ public class Player {
 
     public void rotateEye(float rotationAngle, float rotationVelocity){
         this.direction += rotationAngle*rotationVelocity;
-        this.direction %= (Math.PI*2);
+        this.direction %= (Math.PI*2); // cut it between 0 and 2*PI
         Log.d("DIRECTION", "Direction" + getDirection());
         updateEye();
     }
@@ -47,6 +48,15 @@ public class Player {
         this.camera.z -=  Math.sin(direction)*velocity;
         updatePos();
         updateEye();
+    }
+
+    public int[] tryToMove(float velocity){
+        float x = this.camera.x, z = this.camera.z;
+        x +=  Math.cos(direction)*velocity + (Math.cos(direction)*Math.signum(velocity)*PLAYER_SIZE);
+        z -=  Math.sin(direction)*velocity - (Math.sin(direction)*-1f*Math.signum(velocity)*PLAYER_SIZE);
+        int posX = (int) Math.floor((x)/2*WALL_SIZE);
+        int posZ = (int) Math.floor((z)/2*WALL_SIZE);
+        return new int[]{posX, posZ};
     }
 
     private float getDirection() {

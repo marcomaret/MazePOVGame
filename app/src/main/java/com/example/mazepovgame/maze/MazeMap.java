@@ -1,6 +1,9 @@
 package com.example.mazepovgame.maze;
 
+import android.util.Log;
+
 import com.example.mazepovgame.maze.generation.Cell;
+import com.example.mazepovgame.maze.generation.Maze;
 
 public class MazeMap {
 
@@ -23,5 +26,62 @@ public class MazeMap {
         this.mazeCells = new MazeBlock[width * 3][length * 3];
         CELL_SIZE = 6.0f * WALL_SIZE; // 6 because 3(number of walls in a cellmap) * 2 scale direction
         this.player = new Player(0, 0);
+        setUpMazeStructure();
+    }
+
+    public MazeMap(int width, int length, Player player) {
+        this(width, length);
+        this.player = player;
+    }
+
+    public MazeMap(int width, int length, Player player, float wallSize) {
+        this(width, length, player);
+        WALL_SIZE = wallSize;
+    }
+
+    private void setUpMazeStructure(){
+        Maze mazeGenerator = new Maze(this.width, this.length);
+        this.maze = mazeGenerator.getMaze();
+
+        for (int i = 0; i < width; i++) {
+            for (int j = 0; j < length; j++) {
+                setupMazeCellFromCell(this.maze[i][j]);
+            }
+        }
+    }
+
+    private void setupMazeCellFromCell(Cell cell){
+        float offset = CELL_SIZE/2; //Offset to make top corner of maze start in coords (0,0)
+        float posX = cell.getX() * CELL_SIZE + offset;
+        float posZ = cell.getY() * CELL_SIZE + offset;
+        int i = cell.getX()*3;
+        int j = cell.getY()*3;
+
+        this.mazeCells[j + 0][i + 0] = new MazeBlock(posX - 2*WALL_SIZE, posZ - 2*WALL_SIZE, (cell.getLeft() || cell.getTop()));
+        this.mazeCells[j + 0][i + 1] = new MazeBlock(posX, posZ - 2*WALL_SIZE, cell.getTop());
+        this.mazeCells[j + 0][i + 2] = new MazeBlock(posX + 2*WALL_SIZE, posZ - 2*WALL_SIZE, (cell.getRight() || cell.getTop()));
+
+        this.mazeCells[j + 1][i + 0] = new MazeBlock(posX - 2*WALL_SIZE, posZ, cell.getLeft());
+        this.mazeCells[j + 1][i + 1] = new MazeBlock(posX, posZ, false);
+        this.mazeCells[j + 1][i + 2] = new MazeBlock(posX + 2*WALL_SIZE, posZ, cell.getRight());
+
+        this.mazeCells[j + 2][i + 0] = new MazeBlock(posX - 2*WALL_SIZE, posZ + 2*WALL_SIZE, (cell.getLeft() || cell.getBottom()));
+        this.mazeCells[j + 2][i + 1] = new MazeBlock(posX, posZ + 2*WALL_SIZE, cell.getBottom());
+        this.mazeCells[j + 2][i + 2] = new MazeBlock(posX + 2*WALL_SIZE, posZ + 2*WALL_SIZE, (cell.getRight() || cell.getBottom()));
+    }
+
+    public void movePlayer(float velocity){
+        int pos[] = this.player.tryToMove(velocity);
+
+        if (pos[0] < 0 || pos[1] < 0 || pos[0] >= (width*3) || pos[1] >= (length*3) || this.mazeCells[pos[1]][pos[0]].isWall()){
+            Log.e("PLAYER", "Cannot to move to ("+pos[0]+","+pos[1]+")");
+            return;
+        }
+        Log.d("PLAYER", "Moving to ("+pos[0]+","+pos[1]+")");
+        this.player.movePlayer(velocity);
+    }
+
+    public void rotateEye(float rotation_angle, float rotation_velocity) {
+        this.player.rotateEye(rotation_angle, rotation_velocity);
     }
 }
