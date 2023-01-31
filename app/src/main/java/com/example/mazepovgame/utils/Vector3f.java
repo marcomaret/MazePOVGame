@@ -14,4 +14,17 @@ public class Vector3f {
     public Vector3f(){
         this(0,0,0);
     }
+
+    public void rotateBy(float angle){
+        float cos = (float) Math.cos(angle);
+        float sin = (float) Math.sin(angle);
+        this.x += cos;
+        this.z -= sin;
+    }
+
+    public Vector3f getRotatedBy(float angle){
+        float cos = (float) Math.cos(angle);
+        float sin = (float) Math.sin(angle);
+        return new Vector3f(this.x + cos, this.y, this.z - sin);
+    }
 }
