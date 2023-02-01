@@ -2,7 +2,6 @@ package com.example.mazepovgame.maze;
 
 import static com.example.mazepovgame.maze.MazeMap.WALL_SIZE;
 
-import android.util.Log;
 
 import com.example.mazepovgame.utils.Vector3f;
 
@@ -22,9 +21,11 @@ public class Player {
     public Player(int posX, int posZ){
         this.posX = posX;
         this.posZ = posZ;
-        this.camera = new Vector3f(posX, 0f, posZ);
+        this.camera = new Vector3f(posX*3*WALL_SIZE, 0f, posZ*3*WALL_SIZE); //This spawn player in center block of cell
+        this.eye = new Vector3f(0f,0f,0f);
         this.direction = 0.0f;
         updateEye();
+        updatePos();
     }
 
     private void updateEye() {
@@ -34,18 +35,15 @@ public class Player {
     private void updatePos(){
         this.posX = (int) Math.floor(this.camera.x/2*WALL_SIZE);
         this.posZ = (int) Math.floor(this.camera.z/2*WALL_SIZE);
-        Log.d("PLAYER", "In cell ("+this.posX+","+this.posZ+")");
     }
 
     public void rotateEye(float rotationAngle, float rotationVelocity){
         this.direction += rotationAngle*rotationVelocity;
         this.direction %= (Math.PI*2); // cut it between 0 and 2*PI
-        Log.d("DIRECTION", "Direction" + getDirection());
         updateEye();
     }
 
     public void movePlayer(float velocity){
-        Log.d("PLAYER", "POS"+this.camera);
         this.camera.x +=  Math.cos(direction)*velocity;
         this.camera.z -=  Math.sin(direction)*velocity;
         updatePos();
@@ -61,7 +59,7 @@ public class Player {
         return new int[]{posX, posZ};
     }
 
-    private float getDirection() {
+    public float getDirection() {
         // in degrees
         return (float) (direction*180/Math.PI);
     }
