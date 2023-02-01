@@ -27,4 +27,13 @@ public class Vector3f {
         float sin = (float) Math.sin(angle);
         return new Vector3f(this.x + cos, this.y, this.z - sin);
     }
+
+    @Override
+    public String toString() {
+        return "Vector3f{" +
+                "x=" + x +
+                ", y=" + y +
+                ", z=" + z +
+                '}';
+    }
 }
