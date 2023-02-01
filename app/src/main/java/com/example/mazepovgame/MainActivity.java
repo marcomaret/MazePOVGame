@@ -6,6 +6,7 @@ import android.content.Context;
 import android.content.pm.ConfigurationInfo;
 import android.opengl.GLSurfaceView;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.Window;
@@ -14,6 +15,9 @@ import android.view.WindowManager;
 import androidx.annotation.Nullable;
 
 import com.example.mazepovgame.gles.renderer.BasicRenderer;
+import com.example.mazepovgame.gles.renderer.MazePOVRenderer;
+import com.example.mazepovgame.maze.MazeMap;
+import com.example.mazepovgame.maze.Player;
 
 public class MainActivity extends Activity implements GestureDetector.OnGestureListener {
     private GLSurfaceView surface;
@@ -36,7 +40,11 @@ public class MainActivity extends Activity implements GestureDetector.OnGestureL
         surface.setEGLContextClientVersion(supported);
         surface.setPreserveEGLContextOnPause(true);
 
-        GLSurfaceView.Renderer renderer = new BasicRenderer();
+        this.mazeMap = new MazeMap(8, 8,
+                new Player(1, 1),
+                1.0f // wall size
+        );
+        GLSurfaceView.Renderer renderer = new MazePOVRenderer(mazeMap);
         setContentView(surface);
         ((BasicRenderer) renderer).setContextAndSurface(this,surface);
         surface.setRenderer(renderer);
