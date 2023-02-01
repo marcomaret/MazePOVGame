@@ -47,6 +47,7 @@ import android.util.Log;
 import androidx.annotation.NonNull;
 
 import com.example.mazepovgame.gles.renderer.utils.PlyObject;
+import com.example.mazepovgame.utils.Vector3f;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -89,8 +90,8 @@ public class ObjectDrawer {
         Matrix.setIdentityM(MVP, 0);
         this.bitmap = bitmap; //image for texture
         this.drawOrtho = false;
+        initRenderData(is);
     }
-
 
     private void initRenderData(InputStream is){
         float[] vertices=null;
@@ -178,20 +179,20 @@ public class ObjectDrawer {
         this.drawOrtho = flag;
     }
 
-    public void Draw(@NonNull float[] size, @NonNull float[] pos, float rdegree, @NonNull int[] raxis){
+    public void Draw(Vector3f size, Vector3f pos, float rdegree, @NonNull int[] raxis){
         glUseProgram(shaderHandle);
 
         if (drawOrtho) Matrix.multiplyMM(temp, 0, orthoM, 0, viewM, 0);
         else Matrix.multiplyMM(temp, 0, projM, 0, viewM, 0);
 
         Matrix.setIdentityM(modelM, 0);
-        Matrix.translateM(modelM, 0, pos[0], pos[1], pos[2]);
+        Matrix.translateM(modelM, 0, pos.x, pos.y, pos.z);
         if (rdegree != 0.0f){
-            Matrix.translateM(modelM, 0, 0.5f*size[0], 0.5f*size[1], 0.5f*size[2]); // move origin of rotation to center of cube
+            Matrix.translateM(modelM, 0, 0.5f*size.x, 0.5f*size.y, 0.5f*size.z); // move origin of rotation to center of cube
             Matrix.rotateM(modelM, 0, rdegree, raxis[0], raxis[1], raxis[2]); //rotate
-            Matrix.translateM(modelM, 0, -0.5f*size[0], -0.5f*size[1], -0.5f*size[2]); // move origin back
+            Matrix.translateM(modelM, 0, -0.5f*size.x, -0.5f*size.y, -0.5f*size.z); // move origin back
         }
-        Matrix.scaleM(modelM, 0, size[0], size[1], size[2]);
+        Matrix.scaleM(modelM, 0, size.x, size.y, size.z);
         Matrix.multiplyMM(MVP, 0, temp, 0, modelM,0); // m * v * p
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, texObjId[0]);
