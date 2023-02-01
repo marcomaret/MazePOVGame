@@ -1,5 +1,7 @@
 package com.example.mazepovgame.maze;
 
+import static com.example.mazepovgame.maze.MazeMap.WALL_SIZE;
+
 import com.example.mazepovgame.utils.Vector3f;
 
 // This class represents a block in the game
@@ -10,9 +12,7 @@ public class MazeBlock {
     private Vector3f position;
 
     public MazeBlock(float posX, float posZ, boolean isWall){
-        this.position.x = posX;
-        this.position.y = 0;
-        this.position.z = posZ;
+        this.position = new Vector3f(posX, 0f, posZ);
         this.isWall = isWall;
     }
 
@@ -22,5 +22,9 @@ public class MazeBlock {
 
     public Vector3f getPosition() {
         return position;
+    }
+
+    public Vector3f getSize(){
+        return new Vector3f(WALL_SIZE, 1f, WALL_SIZE);
     }
 }
