@@ -18,19 +18,17 @@ public class MazeMap {
     public final int length;
 
     public static float WALL_SIZE = 1.0f;
-    public static float CELL_SIZE;
+    public static float CELL_SIZE = 6.0f * WALL_SIZE; // 6 because 3(number of walls in a cellmap) * 2 scale direction
 
 
-    public MazeMap(int width, int length) {
+    private MazeMap(int width, int length) {
         this.width = Math.min(width, MAX_WIDTH);
         this.length = Math.min(length, MAX_LENGTH);
         this.mazeCells = new MazeBlock[width * 3][length * 3];
-        CELL_SIZE = 6.0f * WALL_SIZE; // 6 because 3(number of walls in a cellmap) * 2 scale direction
-        this.player = new Player(0, 0);
         setUpMazeStructure();
     }
 
-    public MazeMap(int width, int length, Player player) {
+    private MazeMap(int width, int length, Player player) {
         this(width, length);
         this.player = player;
     }
