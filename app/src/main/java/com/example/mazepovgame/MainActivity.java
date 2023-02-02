@@ -25,12 +25,13 @@ public class MainActivity extends Activity implements GestureDetector.OnGestureL
     private boolean isSurfaceCreated;
     private MazeMap mazeMap = null;
     // U-V Movements Params
-    private final float SWIPE_MIN_DISTANCE = 40.f;
-    private final float SWIPE_THRESHOLD_ROTATION_VELOCITY = .5f;
-    private final float SWIPE_THRESHOLD_PLAYER_VELOCITY = 1.f;
-    private final float ROTATION_VELOCITY = 1.25f;
-    private final float PLAYER_VELOCITY = .3f;
+    private final float SWIPE_MIN_U_DISTANCE = 10.f;
+    private final float SWIPE_MIN_V_DISTANCE = 5.f;
+    private final float SWIPE_THRESHOLD_U = 100f;
+    private final float SWIPE_THRESHOLD_V = 100f;
+    private final float ROTATION_VELOCITY = .5f;
     private final float ROTATION_ANGLE = .05f;
+    private final float PLAYER_VELOCITY = .3f;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -74,21 +75,23 @@ public class MainActivity extends Activity implements GestureDetector.OnGestureL
     }
 
     private float oldX, oldY;
-    private boolean lock;
+    private float startX, startY;
     @Override
     public boolean onTouchEvent(MotionEvent event) {
         this.mGestureDetector.onTouchEvent(event);
         if (event.getAction() == MotionEvent.ACTION_DOWN){
             Log.d("GESTURE", "Started Scrolling At" + event.getX());
+            startX = event.getX();
+            startY = event.getY();
             oldX = event.getX();
             oldY = event.getY();
         }
         if (event.getAction() == MotionEvent.ACTION_MOVE){
             float dx = oldX - event.getX();
             float dy = oldY - event.getY();
-            if (Math.abs(dx) > 10f && Math.abs(dy) <= 50f) {
-                this.mazeMap.rotateEye((Math.signum(dx) == 1f) ? -ROTATION_ANGLE : ROTATION_ANGLE, .5f);
-            } else if (Math.abs(dy) > 5f && Math.abs(dx) <= 50f){
+            if (Math.abs(dx) > SWIPE_MIN_U_DISTANCE && Math.abs(dy) <= SWIPE_THRESHOLD_V  && Math.abs(event.getY() - startY) <= SWIPE_THRESHOLD_V ) {
+                this.mazeMap.rotateEye((Math.signum(dx) == 1f) ? -ROTATION_ANGLE : ROTATION_ANGLE, ROTATION_VELOCITY);
+            } else if (Math.abs(dy) > SWIPE_MIN_V_DISTANCE && Math.abs(dx) <= SWIPE_THRESHOLD_U && Math.abs(event.getX() - startX) <= SWIPE_THRESHOLD_U){
                 this.mazeMap.movePlayer((Math.signum(dy) == 1f) ? PLAYER_VELOCITY : -PLAYER_VELOCITY);
             }
             oldX = event.getX();
