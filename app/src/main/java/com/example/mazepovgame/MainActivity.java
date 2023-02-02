@@ -73,11 +73,31 @@ public class MainActivity extends Activity implements GestureDetector.OnGestureL
             surface.onPause();
     }
 
+    private float oldX, oldY;
+    private boolean lock;
     @Override
     public boolean onTouchEvent(MotionEvent event) {
         this.mGestureDetector.onTouchEvent(event);
+        if (event.getAction() == MotionEvent.ACTION_DOWN){
+            Log.d("GESTURE", "Started Scrolling At" + event.getX());
+            oldX = event.getX();
+            oldY = event.getY();
+        }
+        if (event.getAction() == MotionEvent.ACTION_MOVE){
+            float dx = oldX - event.getX();
+            float dy = oldY - event.getY();
+            if (Math.abs(dx) > 10f && Math.abs(dy) <= 50f) {
+                this.mazeMap.rotateEye((Math.signum(dx) == 1f) ? -ROTATION_ANGLE : ROTATION_ANGLE, .5f);
+            } else if (Math.abs(dy) > 5f && Math.abs(dx) <= 50f){
+                this.mazeMap.movePlayer((Math.signum(dy) == 1f) ? PLAYER_VELOCITY : -PLAYER_VELOCITY);
+            }
+            oldX = event.getX();
+            oldY = event.getY();
+        }
+
         if (event.getAction() == MotionEvent.ACTION_UP){
         }
+
         return super.onTouchEvent(event);
     }
     @Override
@@ -98,22 +118,22 @@ public class MainActivity extends Activity implements GestureDetector.OnGestureL
     public boolean onScroll(MotionEvent e1, MotionEvent e2, float velocityX, float velocityY) {
         float dx = e2.getX() - e1.getX();
         float dy = e2.getY() - e1.getY();
-        Log.d("GESTURE", "Distance X\t" + dx + " Velocity X\t" + velocityX);
-        Log.d("GESTURE", "Distance Y\t" + dy + " Velocity Y\t" + velocityY);
-        if (dx > SWIPE_MIN_DISTANCE*2 // left to right
-                && Math.abs(velocityX) > SWIPE_THRESHOLD_ROTATION_VELOCITY && Math.abs(velocityY) < SWIPE_THRESHOLD_PLAYER_VELOCITY ) {
-            this.mazeMap.rotateEye(ROTATION_ANGLE, ROTATION_VELOCITY);
-        } else if (-dx > SWIPE_MIN_DISTANCE*2 // right to left
-                && Math.abs(velocityX) > SWIPE_THRESHOLD_ROTATION_VELOCITY && Math.abs(velocityY) < SWIPE_THRESHOLD_PLAYER_VELOCITY ) {
-            this.mazeMap.rotateEye(-ROTATION_ANGLE, ROTATION_VELOCITY);
-        } else if (dy > SWIPE_MIN_DISTANCE //top to bottom
-                && Math.abs(velocityY) > SWIPE_THRESHOLD_PLAYER_VELOCITY && Math.abs(velocityX) < SWIPE_THRESHOLD_ROTATION_VELOCITY) {
-            this.mazeMap.movePlayer(-PLAYER_VELOCITY);
-        } else if (-dy > SWIPE_MIN_DISTANCE //bottom to top
-                && Math.abs(velocityY) > SWIPE_THRESHOLD_PLAYER_VELOCITY && Math.abs(velocityX) < SWIPE_THRESHOLD_ROTATION_VELOCITY) {
-            this.mazeMap.movePlayer(PLAYER_VELOCITY);
-        }
-        return true;
+        //Log.d("GESTURE", "Distance X\t" + dx + " Velocity X\t" + velocityX);
+        //Log.d("GESTURE", "Distance Y\t" + dy + " Velocity Y\t" + velocityY);
+        //if (dx > SWIPE_MIN_DISTANCE*2 // left to right
+        //        && Math.abs(velocityX) > SWIPE_THRESHOLD_ROTATION_VELOCITY && Math.abs(velocityY) < SWIPE_THRESHOLD_PLAYER_VELOCITY ) {
+        //    this.mazeMap.rotateEye(ROTATION_ANGLE, ROTATION_VELOCITY);
+        //} else if (-dx > SWIPE_MIN_DISTANCE*2 // right to left
+        //        && Math.abs(velocityX) > SWIPE_THRESHOLD_ROTATION_VELOCITY && Math.abs(velocityY) < SWIPE_THRESHOLD_PLAYER_VELOCITY ) {
+        //    this.mazeMap.rotateEye(-ROTATION_ANGLE, ROTATION_VELOCITY);
+        //} else if (dy > SWIPE_MIN_DISTANCE //top to bottom
+        //        && Math.abs(velocityY) > SWIPE_THRESHOLD_PLAYER_VELOCITY && Math.abs(velocityX) < SWIPE_THRESHOLD_ROTATION_VELOCITY) {
+        //    this.mazeMap.movePlayer(-PLAYER_VELOCITY);
+        //} else if (-dy > SWIPE_MIN_DISTANCE //bottom to top
+        //        && Math.abs(velocityY) > SWIPE_THRESHOLD_PLAYER_VELOCITY && Math.abs(velocityX) < SWIPE_THRESHOLD_ROTATION_VELOCITY) {
+        //    this.mazeMap.movePlayer(PLAYER_VELOCITY);
+        //}
+        return false;
     }
 
     @Override
