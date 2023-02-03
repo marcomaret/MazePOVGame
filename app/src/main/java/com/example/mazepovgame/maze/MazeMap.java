@@ -69,14 +69,15 @@ public class MazeMap {
         this.mazeCells[j + 2][i + 2] = new MazeBlock(posX + 2*WALL_SIZE, posZ + 2*WALL_SIZE, (cell.getRight() || cell.getBottom()));
     }
 
-    public void movePlayer(float velocity){
+    public boolean movePlayer(float velocity){
         int pos[] = this.player.tryToMove(velocity);
         if (pos[0] < 0 || pos[1] < 0 || pos[0] >= (width*3) || pos[1] >= (length*3) || this.mazeCells[pos[1]][pos[0]].isWall()){
             Log.e("PLAYER", "Cannot to move to ("+pos[0]+","+pos[1]+")");
-            return;
+            return false;
         }
         Log.d("PLAYER", "Moving to ("+pos[0]+","+pos[1]+")");
         this.player.movePlayer(velocity);
+        return true;
     }
 
     public void rotateEye(float rotation_angle, float rotation_velocity) {

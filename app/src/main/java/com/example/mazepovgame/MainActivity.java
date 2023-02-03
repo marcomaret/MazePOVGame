@@ -18,6 +18,9 @@ import com.example.mazepovgame.gles.renderer.BasicRenderer;
 import com.example.mazepovgame.gles.renderer.MazePOVRenderer;
 import com.example.mazepovgame.maze.MazeMap;
 import com.example.mazepovgame.maze.Player;
+import com.example.mazepovgame.maze.timer.UVTimer;
+
+import java.util.Timer;
 
 public class MainActivity extends Activity implements GestureDetector.OnGestureListener {
     private GLSurfaceView surface;
@@ -25,13 +28,13 @@ public class MainActivity extends Activity implements GestureDetector.OnGestureL
     private boolean isSurfaceCreated;
     private MazeMap mazeMap = null;
     // U-V Movements Params
-    private final float SWIPE_MIN_U_DISTANCE = 10.f;
+    private final float SWIPE_MIN_U_DISTANCE = 5.f;
     private final float SWIPE_MIN_V_DISTANCE = 5.f;
-    private final float SWIPE_THRESHOLD_U = 100f;
-    private final float SWIPE_THRESHOLD_V = 100f;
-    private final float ROTATION_VELOCITY = .5f;
-    private final float ROTATION_ANGLE = .05f;
-    private final float PLAYER_VELOCITY = .3f;
+    private final float ROTATION_ANGLE = .02f;
+    private final float PLAYER_VELOCITY = .05f;
+
+    private UVTimer uvTimer;
+    private Timer timer;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -53,6 +56,7 @@ public class MainActivity extends Activity implements GestureDetector.OnGestureL
                 new Player(1, 1),
                 1.0f // wall size
         );
+
         GLSurfaceView.Renderer renderer = new MazePOVRenderer(mazeMap);
         setContentView(surface);
         ((BasicRenderer) renderer).setContextAndSurface(this,surface);
@@ -74,33 +78,9 @@ public class MainActivity extends Activity implements GestureDetector.OnGestureL
             surface.onPause();
     }
 
-    private float oldX, oldY;
-    private float startX, startY;
     @Override
     public boolean onTouchEvent(MotionEvent event) {
         this.mGestureDetector.onTouchEvent(event);
-        if (event.getAction() == MotionEvent.ACTION_DOWN){
-            Log.d("GESTURE", "Started Scrolling At" + event.getX());
-            startX = event.getX();
-            startY = event.getY();
-            oldX = event.getX();
-            oldY = event.getY();
-        }
-        if (event.getAction() == MotionEvent.ACTION_MOVE){
-            float dx = oldX - event.getX();
-            float dy = oldY - event.getY();
-            if (Math.abs(dx) > SWIPE_MIN_U_DISTANCE && Math.abs(dy) <= SWIPE_THRESHOLD_V  && Math.abs(event.getY() - startY) <= SWIPE_THRESHOLD_V ) {
-                this.mazeMap.rotateEye((Math.signum(dx) == 1f) ? -ROTATION_ANGLE : ROTATION_ANGLE, ROTATION_VELOCITY);
-            } else if (Math.abs(dy) > SWIPE_MIN_V_DISTANCE && Math.abs(dx) <= SWIPE_THRESHOLD_U && Math.abs(event.getX() - startX) <= SWIPE_THRESHOLD_U){
-                this.mazeMap.movePlayer((Math.signum(dy) == 1f) ? PLAYER_VELOCITY : -PLAYER_VELOCITY);
-            }
-            oldX = event.getX();
-            oldY = event.getY();
-        }
-
-        if (event.getAction() == MotionEvent.ACTION_UP){
-        }
-
         return super.onTouchEvent(event);
     }
     @Override
@@ -121,22 +101,42 @@ public class MainActivity extends Activity implements GestureDetector.OnGestureL
     public boolean onScroll(MotionEvent e1, MotionEvent e2, float velocityX, float velocityY) {
         float dx = e2.getX() - e1.getX();
         float dy = e2.getY() - e1.getY();
-        //Log.d("GESTURE", "Distance X\t" + dx + " Velocity X\t" + velocityX);
-        //Log.d("GESTURE", "Distance Y\t" + dy + " Velocity Y\t" + velocityY);
-        //if (dx > SWIPE_MIN_DISTANCE*2 // left to right
-        //        && Math.abs(velocityX) > SWIPE_THRESHOLD_ROTATION_VELOCITY && Math.abs(velocityY) < SWIPE_THRESHOLD_PLAYER_VELOCITY ) {
-        //    this.mazeMap.rotateEye(ROTATION_ANGLE, ROTATION_VELOCITY);
-        //} else if (-dx > SWIPE_MIN_DISTANCE*2 // right to left
-        //        && Math.abs(velocityX) > SWIPE_THRESHOLD_ROTATION_VELOCITY && Math.abs(velocityY) < SWIPE_THRESHOLD_PLAYER_VELOCITY ) {
-        //    this.mazeMap.rotateEye(-ROTATION_ANGLE, ROTATION_VELOCITY);
-        //} else if (dy > SWIPE_MIN_DISTANCE //top to bottom
-        //        && Math.abs(velocityY) > SWIPE_THRESHOLD_PLAYER_VELOCITY && Math.abs(velocityX) < SWIPE_THRESHOLD_ROTATION_VELOCITY) {
-        //    this.mazeMap.movePlayer(-PLAYER_VELOCITY);
-        //} else if (-dy > SWIPE_MIN_DISTANCE //bottom to top
-        //        && Math.abs(velocityY) > SWIPE_THRESHOLD_PLAYER_VELOCITY && Math.abs(velocityX) < SWIPE_THRESHOLD_ROTATION_VELOCITY) {
-        //    this.mazeMap.movePlayer(PLAYER_VELOCITY);
-        //}
-        return false;
+        int rate;
+        float step;
+        boolean uOrV;
+
+        if (uvTimer != null){
+            if (uvTimer.isMoving()){ // I'm already moving, don't do nothing
+                Log.e("PLAYER", "Still moving, wait that animation is completed before scrolling");
+                return true;
+            }
+        }
+
+        if (dy > SWIPE_MIN_V_DISTANCE && Math.abs(dx) < SWIPE_MIN_U_DISTANCE*2){ //top to bottom
+            step = PLAYER_VELOCITY;
+            rate = 10;
+            uOrV = false;
+        } else if (-dy > SWIPE_MIN_V_DISTANCE && Math.abs(dx) < SWIPE_MIN_U_DISTANCE*2){ //bottom to top
+            step = -PLAYER_VELOCITY;
+            rate = 10;
+            uOrV = false;
+        } else if (dx > SWIPE_MIN_U_DISTANCE && Math.abs(dy) < SWIPE_MIN_V_DISTANCE) {
+            step = ROTATION_ANGLE;
+            rate = 20;
+            uOrV = true;
+        } else if (-dx > SWIPE_MIN_U_DISTANCE && Math.abs(dy) < SWIPE_MIN_V_DISTANCE) {
+            step = -ROTATION_ANGLE;
+            rate = 20;
+            uOrV = true;
+        } else {
+            return false;
+        }
+        timer = new Timer();
+        uvTimer = new UVTimer(mazeMap, step, uOrV);
+        timer.scheduleAtFixedRate(uvTimer, 5, rate);
+        uvTimer.startMoving();
+
+        return true;
     }
 
     @Override
